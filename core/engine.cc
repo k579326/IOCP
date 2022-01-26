@@ -85,7 +85,7 @@ void IoEventEngine::Stop()
 
 	size_t repeat = thread_count_;
 	while (repeat--)
-		assert(PostQueuedCompletionStatus(iocp_, 0xffffffff, NULL, NULL));
+		PostQueuedCompletionStatus(iocp_, 0xffffffff, NULL, NULL);
 	cond_.notify_one();
 }
 

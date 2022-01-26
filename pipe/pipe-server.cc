@@ -71,7 +71,12 @@ int PipeServer::_Listen(bool first)
         std::bind(&Server::SendCallback, this,
             std::placeholders::_1)
     );
-    assert(conn->Init(0, newobj) == 0);
+    if (conn->Init(0, newobj) != 0)
+    {
+        delete conn;
+        delete newobj;
+        return -1;
+    }
 
     int rst = conn->PostListen();
     if (rst == ERROR_PIPE_CONNECTED)
@@ -93,10 +98,13 @@ void PipeServer::OnConnect(IObject* obj)
     RemoteConnect* conn = reinterpret_cast<RemoteConnect*>(obj);
     conn->ResetConnId(connid);
     AddConnectToTable(connid, std::shared_ptr<RemoteConnect>(conn));
-    assert(conn->PostRecv() == 0);
+    if (conn->PostRecv() != 0)
+        assert(false);
+
     // callback
     callback_->OnConnect(connid);
-    assert(_Listen(false) == 0);
+    if (_Listen(false) != 0)
+        assert(false);
 }
 void PipeServer::OnDisconnect()
 {
